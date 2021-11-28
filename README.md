@@ -1,1 +1,1 @@
-# django-docker-mysql
+# django-docker-mysql tester
