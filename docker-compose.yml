@@ -1,18 +1,41 @@
 version: "3.8"
 services:
-  app:
+  django_app:
     build: .
     volumes:
-      - .:/django
+      - .:/app
     ports:
       - 8000:8000
-    image: app:django
     container_name: django_container
     command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKED=redis://redis:6379/0
     depends_on:
       - db
+      - redis 
   
-  
+  celery:
+    build: .
+    command: celery  -A core worker -l INFO
+    volumes:
+      - .:/app
+    container_name: celery_container
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKED=redis://redis:6379/0    
+    depends_on:
+      - django_app
+      - redis 
+
+  redis:
+    image: redis:alpine
+    container_name: redis_container
+
   db:
     # image: postgres
     # volumes:
@@ -30,6 +53,12 @@ services:
       MYSQL_DATABASE: 'django-app-db'
       MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
     volumes:
-      - ./data/mysql/db:/var/lib/mysql
+      - mysqldata:/var/lib/mysql
  
+
+volumes:
+  mysqldata:
+
+
+
 
