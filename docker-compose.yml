@@ -18,7 +18,8 @@ services:
       - redis 
   
   celery:
-    build: .
+    build:
+      context: .
     command: celery  -A core worker -l INFO
     volumes:
       - .:/app
@@ -31,6 +32,7 @@ services:
     depends_on:
       - django_app
       - redis 
+      - db
 
   redis:
     image: redis:alpine
